@@ -1,0 +1,33 @@
+from PIL import Image
+
+referent=[0,0,0]
+
+def  matchlist(list1,list2):
+    for i in range(3):
+        if list1[i] == list2[i]:
+            continue
+        else:
+            return False
+        
+    return True
+
+
+def main():
+    img=Image.open("exports/Export110.png")
+    rgba=img.convert("RGBA")
+    data=rgba.getdata()
+    newData=[]
+    for item in data:
+        if matchlist(item,referent) == True:
+            newData.append([1,1,1,0])
+        else:
+            newData.append(item)
+
+    rgba.putdata(newData)
+    rgba.save("transparent_image.png", "PNG")
+
+
+
+
+
+main()

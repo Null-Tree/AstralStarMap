@@ -8,7 +8,7 @@ import math
 import sys
 
 from tkinter import * 
-from PIL import Image,ImageDraw, ImageFont #Pillow library
+from PIL import Image,ImageDraw  #Pillow library
 import scipy.ndimage as ndi
 
 import astropy.units as u
@@ -41,22 +41,22 @@ class Star:
 
 @dataclass         
 class stargraphic:
-    rgb:list = None
+    rgba:list = None
     radius:int=1
     x:int=None
     y:int=None
 
-#skybox export
+
 #########################################################################################
 
 #CONFIG
-sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
+sizepower=14 #size power for dimensions of expor timage
 
 #stars
 #min radius of star
-minradius=1
-maxradius=2
-sizedeviCoef=5
+minradius=4
+maxradius=7
+sizedeviCoef=16
 #color min intensity of star rgb
 colormin=200
 
@@ -67,25 +67,19 @@ rbvariencediv=4
 appmagreq = 8
 #greyshade
 #makes color into shade of grey x
-greyshade=False
+greyshade=True
 
 #color border for ocnstalations
-consborderRGB = (70,70,70) 
+consborderRGBA = (70,70,70,1) 
 #line width for constalations
-conslinewidth=2
+conslinewidth=5
 
 #width power of 2, height half
 width=int(2**sizepower)
 height=int(width/2)
 
-#txtcondif
-txtfill = (194, 215, 234)
-txtfontsize=32
-consLabel=True
-
 ###############################################################
 ###################################
-
 
 xlist=[]
 ylist=[]
@@ -94,7 +88,6 @@ sizelist=[]
 size=1
 
 n=0
-
 
 # handles gaia stars
 def processcsv(filepath,img:Image):
@@ -151,11 +144,10 @@ def starformatter(star:Star):
 
     
 
-    #abs mag visible 8 to -1.5
-    global appmagreq
-    consider = appmagreq-star.appmag 
-    #consider: value = brightness 0 to 9.5 
-    coef=consider/(appmagreq+1.5)
+    #abs mag visible 6 to -1.5
+    consider = 6-star.appmag 
+    #consider: value = brightness 0 to 4.5
+    coef=consider/4.5
 
     global colormin
     min=colormin
@@ -170,14 +162,14 @@ def starformatter(star:Star):
     if greyshade:
         if baseline>Cmax:
             baseline=Cmax
-        dot.rgb=(baseline,baseline,baseline)
+        dot.rgba=(baseline,baseline,baseline)
     else:
 
         rb=10**(star.bprp/2.5)
         u=diff/(rb+1)
         r=int(u*rb+baseline)
         b=int(u+baseline)
-        # print(f"({r},{baseline},{b}) rb{rb} diff{diff} u{u}")
+        print(f"({r},{baseline},{b}) rb{rb} diff{diff} u{u}")
 
         g=baseline
     
@@ -191,25 +183,24 @@ def starformatter(star:Star):
         
         
 
-        dot.rgb=(r,g,b)
+        dot.rgba=(r,g,b)
     
 
     # dot.radius=5
     global minradius
     global sizedeviCoef
-    dot.radius=int(round((coef*sizedeviCoef+minradius)))
-    # print(str(coef)+" | ceof")
-    # print(dot.radius)
+    dot.radius=int(coef*sizedeviCoef+minradius)
     if dot.radius>maxradius:
         dot.radius=maxradius
-    
+
+    dot.radius=4
 
     return dot
 
 def count():
     global n
     n += 1
-    # print(n)
+    print(n)
 
 #handles bright stars
 def processBS(filepath,img:Image):
@@ -253,13 +244,13 @@ def processBS(filepath,img:Image):
 
 def createimg():
 
-    img = Image.new(mode="RGB",size=(width,height) )
+    img = Image.new(mode="RGBA",size=(width,height) )
     return img
 
 def placestar(imgstar:stargraphic,img):
     draw = ImageDraw.Draw(img)
 
-    draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgb, outline=imgstar.rgb, width=1)
+    draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgba, outline=imgstar.rgba, width=1)
 
 def saveimg(img):
     # img.save(sys.stdout, "PNG")
@@ -296,15 +287,14 @@ def plot(img:Image):
 
     handleconsjson(ax,img)
 
-    # plt.show()
-    plt.close()
+    plt.show()
 
 
 #------------------------------------------------------------------------------
 
 def drawline(xlist,ylist,img):
     draw = ImageDraw.Draw(img)
-    global consborderRGB
+    global consborderRGBA
     xl=xlist
     yl=ylist
     cordslist=[]
@@ -315,40 +305,16 @@ def drawline(xlist,ylist,img):
 
         #TODO convert to pixel
 
-        x= width-int((float(x) / 360) * width)  # inverted
+        x= width-int((float(x) / 360) * width)  #TODO revert inversion
         y= int(((float(y-90)*-1)/180) * height) 
 
         cordslist.append((x,y))
 
-        # print(cordslist)
+        print(cordslist)
 
     
     global conslinewidth
-    draw.line(cordslist, fill =consborderRGB, width = conslinewidth)
-
-def drawtext(ralist : list, declist : list, strlist : list, img:Image):
-    draw=ImageDraw.Draw(img)
-    rl=ralist
-    dl=declist
-    namelist=strlist
-    global txtfill,txtfontsize
-
-    for i in range(len(rl)):
-        x=rl[i]
-        y=dl[i]
-        x= width-int((float(x) / 360) * width)  # inverted
-        y= int(((float(y-90)*-1)/180) * height)
-
-        cord=(x,y)
-        name=namelist[i]
-
-        global txtfontsize,txtfill
-        font = ImageFont.truetype(r'fonts/times.ttf', txtfontsize) 
-        draw.text(cord,name,fill = txtfill,font=font)
-
-# ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align=”left”)    
-
-
+    draw.line(cordslist, fill =consborderRGBA, width = conslinewidth)
 
 #=============================================================================================================
 
@@ -384,11 +350,6 @@ def get_ra_dec(starname,identity,ra,de):
     return ra[index], de[index]
 
 def handleconsjson(ax,img):
-    namelist=[]
-    ralist=[]
-    declist=[]
-
-
     # open list of stars with coordinates
     identity, ra_dec = np.loadtxt("csv/iau.coords.txt",usecols=(1,5),delimiter='|',unpack=True,dtype=str)
     for i in range(len(identity)):
@@ -408,13 +369,6 @@ def handleconsjson(ax,img):
 
     # Iterating through the json list need
     for constellation in data['constellations']:
-        #TODO: get constalation name
-
-        n,rasum,decsum=0,0,0
-        
-        constellationName = constellation['names'][0]['english']
-        namelist.append(constellationName)
-
         this_lines = constellation['lines']
         # print(this_lines)
         # 
@@ -422,13 +376,9 @@ def handleconsjson(ax,img):
             stars = this_lines[line]
             this_line_ra = np.zeros(len(stars))
             this_line_de = np.zeros(len(stars))
-            
             for star in range(len(stars)):
                 this_line_ra[star], this_line_de[star] = get_ra_dec(stars[star],identity,ra,de)
                 this_line_ra[star] /= 15.0
-
-                
-
                 #ax.text(this_line_ra[star], this_line_de[star], str(stars[star]))
             #ax.scatter(this_line_ra, this_line_de, s=320, facecolors='none', edgecolors='k')
             for i in range(len(this_line_ra)-1):
@@ -436,11 +386,6 @@ def handleconsjson(ax,img):
                     #pass
                     finalra = ra2deg(this_line_ra)
                     # finalra=this_line_ra
-                    # print(finalra)
-                    for j in range(len(finalra)):
-                        n+=1
-                        rasum+=finalra[j]
-                        decsum+=this_line_de[j]
 
                     
                     ax.plot(finalra[i:i+2], this_line_de[i:i+2], 'g-',alpha=0.5)
@@ -451,7 +396,6 @@ def handleconsjson(ax,img):
                     
                     finalra=ra2deg(ra_new)
                     # finalra=ra_new
-                    #condition for edge
 
 
                     
@@ -460,17 +404,6 @@ def handleconsjson(ax,img):
 
                     drawline(finalra[0:2], de_new[0:2],img)
                     drawline(finalra[2:4], de_new[2:4],img)
-                #TODO: get a position
-        
-        ramean=((rasum/n))
-        decmean= ((decsum/n))
-        # print(f"ra {ramean} de {decmean}")
-        ralist.append(ramean)
-        declist.append(decmean)
-    
-    global consLabel
-    if consLabel:
-        drawtext(ralist,declist,namelist,img)
 
     # Close file
     f.close()
@@ -492,12 +425,13 @@ def main():
     processcsv("csv/visstars8.csv",img)
     processBS("csv/brightstars.csv",img)
     
-
     
     
     
 
     saveimg(img)
+
+
 
 
 
