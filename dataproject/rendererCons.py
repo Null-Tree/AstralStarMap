@@ -46,11 +46,14 @@ class stargraphic:
     x:int=None
     y:int=None
 
+#a3 export
+
+
 #skybox export
 #########################################################################################
 
 #CONFIG
-sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
+sizepower=15 #size power for dimensions of expor timage #normal 14 for 16k
 
 #stars
 #min radius of star
@@ -69,10 +72,13 @@ appmagreq = 8
 #makes color into shade of grey x
 greyshade=False
 
+colorOverride=False
+overrideRGB=(255,255,255)
+
 #color border for ocnstalations
 consborderRGB = (70,70,70) 
 #line width for constalations
-conslinewidth=2
+conslinewidth=4
 
 #width power of 2, height half
 width=int(2**sizepower)
@@ -81,10 +87,16 @@ height=int(width/2)
 #txtcondif
 txtfill = (194, 215, 234)
 txtfontsize=32
-consLabel=True
+consLabel=False
+
+#bg
+bgcolor=(0,0,0)
 
 ###############################################################
 ###################################
+
+
+
 
 
 xlist=[]
@@ -189,9 +201,11 @@ def starformatter(star:Star):
         if b>Cmax:
             b=Cmax
         
-        
-
-        dot.rgb=(r,g,b)
+        global colorOverride, overrideRGB
+        if colorOverride:
+            dot.rgb = overrideRGB
+        else:
+            dot.rgb=(r,g,b)
     
 
     # dot.radius=5
@@ -252,8 +266,8 @@ def processBS(filepath,img:Image):
             
 
 def createimg():
-
-    img = Image.new(mode="RGB",size=(width,height) )
+    global bgcolor
+    img = Image.new(mode="RGB",size=(width,height), color=bgcolor )
     return img
 
 def placestar(imgstar:stargraphic,img):
@@ -296,7 +310,7 @@ def plot(img:Image):
 
     handleconsjson(ax,img)
 
-    # plt.show()
+    plt.show()
     plt.close()
 
 
