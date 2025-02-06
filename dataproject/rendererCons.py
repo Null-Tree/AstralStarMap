@@ -70,9 +70,9 @@ appmagreq = 8
 greyshade=False
 
 #color border for ocnstalations
-consborderRGB = (70,70,70) 
+consborderRGB = (100,100,100) 
 #line width for constalations
-conslinewidth=2
+conslinewidth=3
 
 #width power of 2, height half
 width=int(2**sizepower)
