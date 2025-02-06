@@ -76,7 +76,7 @@ colorOverride=False
 overrideRGB=(255,255,255)
 
 #color border for ocnstalations
-consborderRGB = (70,70,70) 
+consborderRGB = (100,100,100) 
 #line width for constalations
 conslinewidth=4
 
