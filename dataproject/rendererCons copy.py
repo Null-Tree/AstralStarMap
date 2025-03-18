@@ -404,7 +404,7 @@ def handleconsjson(ax,img):
 
 
     # open list of stars with coordinates
-    identity, ra_dec = np.loadtxt("csv/iau.coords.txt",usecols=(1,5),delimiter='|',unpack=True,dtype=str)
+    identity, ra_dec = np.loadtxt("csv/boorong/boorong_cords.txt",usecols=(3,6),delimiter='|',unpack=True,dtype=str)
     for i in range(len(identity)):
         identity[i] = identity[i].strip()
     Nstars = len(ra_dec)
@@ -415,7 +415,7 @@ def handleconsjson(ax,img):
         de[i] = float(ra_dec[i].split()[1])
         
     # Opening JSON file
-    f = open('csv/iau.json')
+    f = open('csv/boorong/boorong.json')
 
     # returns JSON object as a dictionary
     data = json.load(f)
