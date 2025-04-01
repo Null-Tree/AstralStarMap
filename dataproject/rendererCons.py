@@ -53,7 +53,7 @@ class stargraphic:
 #########################################################################################
 
 #CONFIG
-sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
+sizepower=13 #size power for dimensions of expor timage #normal 14 for 16k
 
 #stars
 #min radius of star
@@ -78,7 +78,7 @@ overrideRGB=(255,255,255)
 #color border for ocnstalations
 consborderRGB = (100,100,100) 
 #line width for constalations
-conslinewidth=4
+conslinewidth=3
 
 #width power of 2, height half
 width=int(2**sizepower)
@@ -278,7 +278,8 @@ def placestar(imgstar:stargraphic,img):
 def saveimg(img):
     # img.save(sys.stdout, "PNG")
     img.show()    
-    string=f"exports/Export{tempfile()}.png"
+    # string=f"exports/Export{tempfile()}.png"
+    string="v1WesternMID.png"
     print(f"saved as {string}")
     img.save(string)
     tempfile(1)
