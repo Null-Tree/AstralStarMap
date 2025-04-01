@@ -80,7 +80,7 @@ hipIDs, identities = np.loadtxt("boorong_cords.txt",usecols=(2,3),delimiter='|',
 for i in range(len(identities)):
     starIdentifyers[hipIDs[i].strip()]=identities[i].strip()
 
-print(starIdentifyers)
+# print(starIdentifyers)
 # exit()
 ##############################################
 # make jsonDict
@@ -120,17 +120,21 @@ with open(consStarsFile, 'r') as file:
 
         for i in range(hipListLengh//2):
             
-            pair=hipIDlist[i:i+2]
-            print(pair)
+            pair=hipIDlist[2*i: 2*i+2]
+            if consID == "Krk":
+                print(f"[{2*i}: {2*i+2}]")
+            # print(pair)
             consLines.append(pair)
             identifyerpair = [starIdentifyers[f"HIP{starID}"] for starID in pair]
 
 
-            print(identifyerpair)
+            # print(identifyerpair)
             consIdentifyerList.append(identifyerpair)
-            print(consIdentifyerList)
+            # print(consIdentifyerList)
 
-
+        if consID == "Krk":
+            print(consLines)
+            print(hipListLengh)
 
 
         
@@ -144,6 +148,6 @@ import json
 
 
 
-outfile="boorong.json"
-with open(outfile, 'w') as file:
-    file.write(json.dumps(jsonDict, indent=4))
+# outfile="boorong.json"
+# with open(outfile, 'w') as file:
+#     file.write(json.dumps(jsonDict, indent=4))
