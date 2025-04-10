@@ -166,9 +166,9 @@ def starformatter(star:Star):
 
     #abs mag visible 8 to -1.5
     global appmagreq
-    consider = appmagreq-star.appmag 
+    consider = (appmagreq+2)-star.appmag 
     #consider: value = brightness 0 to 9.5 
-    coef=consider/(appmagreq+1.5)
+    coef=consider/((appmagreq+2))
 
     global colormin
     min=colormin
