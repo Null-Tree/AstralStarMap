@@ -141,7 +141,7 @@ def processcsv(filepath,img:Image):
                 if star.appmag<appmagreq:
                     xlist.append(star.ra)
                     ylist.append(star.dec)
-                    maglist.append(star.absmag)
+                    maglist.append(star.appmag)
                     sizelist.append(size)
                     count()
                     imgstar=starformatter(star)
@@ -166,9 +166,9 @@ def starformatter(star:Star):
 
     #abs mag visible 8 to -1.5
     global appmagreq
-    consider = appmagreq-star.appmag 
+    consider = (appmagreq+2)-star.appmag 
     #consider: value = brightness 0 to 9.5 
-    coef=consider/(appmagreq+1.5)
+    coef=consider/((appmagreq+2)+1.5)
 
     global colormin
     min=colormin
@@ -257,7 +257,7 @@ def processBS(filepath,img:Image):
                 if star.appmag<appmagreq:
                     xlist.append(star.ra)
                     ylist.append(star.dec)
-                    maglist.append(star.absmag)
+                    maglist.append(star.appmag)
                     sizelist.append(size)
                     count()
 
