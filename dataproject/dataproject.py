@@ -55,6 +55,9 @@ def equatorialtogalactic(ra,dec):
 
 def loadstars(infilepath,outputfile):
         with open(infilepath, newline='') as csvfilein:
+            print("loading stars in")
+
+            
             reader = csv.reader(csvfilein, delimiter=',',)
 
             rowcount=0
@@ -69,6 +72,8 @@ def loadstars(infilepath,outputfile):
 
                 # designation0,source_id1,ra2,dec3,parallax4,phot_g_mean_mag5,bp_rp6,radial_velocity7
                 for row in reader:
+                    if rowcount % 100 ==0: 
+                         print(f"{rowcount} star")
 
                     if (row[2] and row[3] and rowcount != 0):    #validation
                         newstar=GaiaStar()
@@ -133,7 +138,11 @@ def loadstars(infilepath,outputfile):
     
 
 def main():
-    loadstars('csv/gaia.csv','csv/visstars8.csv')
+#     loadstars('csv/gaia.csv','csv/visstars8.csv')
+
+    print("start main")
+    loadstars('csv/newCat8.csv','csv/visstars8_NewCat.csv')
+    
     print("done")
 
 main()

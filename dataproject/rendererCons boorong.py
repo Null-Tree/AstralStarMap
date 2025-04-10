@@ -503,7 +503,7 @@ def main():
     img=createimg()
     plot(img)
     
-    processcsv("csv/visstars8.csv",img)
+    processcsv("csv/visstars8_NewCat.csv",img)
     processBS("csv/brightstars.csv",img)
     
 

@@ -53,12 +53,13 @@ class stargraphic:
 #########################################################################################
 
 #CONFIG
-sizepower=13 #size power for dimensions of expor timage #normal 14 for 16k
+sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
 
 #stars
 #min radius of star
-minradius=1
-maxradius=2
+# Decimals ok
+minradius=2
+maxradius=3
 sizedeviCoef=5
 #color min intensity of star rgb
 colormin=200
@@ -87,7 +88,7 @@ height=int(width/2)
 #txtcondif
 txtfill = (194, 215, 234)
 txtfontsize=32
-consLabel=True
+consLabel=False
 
 #bg
 bgcolor=(0,0,0)
@@ -278,8 +279,8 @@ def placestar(imgstar:stargraphic,img):
 def saveimg(img):
     # img.save(sys.stdout, "PNG")
     img.show()    
-    # string=f"exports/Export{tempfile()}.png"
-    string="v1WesternMID.png"
+    string=f"exports/Export{tempfile()}.png"
+    # string="v1WesternLOW.png"
     print(f"saved as {string}")
     img.save(string)
     tempfile(1)
@@ -504,7 +505,7 @@ def main():
     img=createimg()
     plot(img)
     
-    processcsv("csv/visstars8.csv",img)
+    processcsv("csv/visstars8_NewCat.csv",img)
     processBS("csv/brightstars.csv",img)
     
 
