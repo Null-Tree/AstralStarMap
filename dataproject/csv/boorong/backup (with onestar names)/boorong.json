@@ -785,6 +785,21 @@
             ]
         },
         {
+            "id": "Kts",
+            "names": [
+                {
+                    "english": "",
+                    "native": ""
+                }
+            ],
+            "lines": [
+                [
+                    "* bet Hyi",
+                    "* bet Hyi"
+                ]
+            ]
+        },
+        {
             "id": "Ktc",
             "names": [
                 {
@@ -937,6 +952,21 @@
             ]
         },
         {
+            "id": "Tch",
+            "names": [
+                {
+                    "english": "Emu",
+                    "native": "Tchingal"
+                }
+            ],
+            "lines": [
+                [
+                    "* zet Lup",
+                    "* zet Lup"
+                ]
+            ]
+        },
+        {
             "id": "Tot",
             "names": [
                 {
@@ -1023,6 +1053,66 @@
             ]
         },
         {
+            "id": "Wrn",
+            "names": [
+                {
+                    "english": "Galaxy",
+                    "native": "Warring"
+                }
+            ],
+            "lines": [
+                [
+                    "* del Sgr",
+                    "* del Sgr"
+                ]
+            ]
+        },
+        {
+            "id": "Wkr",
+            "names": [
+                {
+                    "english": "Singing bushlark",
+                    "native": "Weetkurrk"
+                }
+            ],
+            "lines": [
+                [
+                    "* e Boo",
+                    "* e Boo"
+                ]
+            ]
+        },
+        {
+            "id": "Gel",
+            "names": [
+                {
+                    "english": "Pink cockatoo",
+                    "native": "Gellarlec"
+                }
+            ],
+            "lines": [
+                [
+                    "* alf Tau",
+                    "* alf Tau"
+                ]
+            ]
+        },
+        {
+            "id": "Col",
+            "names": [
+                {
+                    "english": "Species of ant",
+                    "native": "Collenbitchick"
+                }
+            ],
+            "lines": [
+                [
+                    "* alf02 Cap",
+                    "* alf02 Cap"
+                ]
+            ]
+        },
+        {
             "id": "Won",
             "names": [
                 {
@@ -1058,6 +1148,21 @@
                 [
                     "* eps CrA",
                     "* lam CrA"
+                ]
+            ]
+        },
+        {
+            "id": "Min",
+            "names": [
+                {
+                    "english": "The maned snake",
+                    "native": "Mindi"
+                }
+            ],
+            "lines": [
+                [
+                    "* lam Vel",
+                    "* lam Vel"
                 ]
             ]
         }

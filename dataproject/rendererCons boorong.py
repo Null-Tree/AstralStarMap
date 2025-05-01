@@ -57,15 +57,12 @@ sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
 
 #stars
 #min radius of star
-minradius=1
-maxradius=2
-sizedeviCoef=5
+minradius=0
+maxradius=6*3
 #color min intensity of star rgb
-colormin=200
+colormin=0
 
-Cmax=255
-#color varience divider
-rbvariencediv=4
+
 #app mag req
 appmagreq = 8
 #greyshade
@@ -88,6 +85,7 @@ height=int(width/2)
 txtfill = (194, 215, 234)
 txtfontsize=32
 consLabel=True
+antialius=1
 
 #bg
 bgcolor=(0,0,0)
@@ -152,6 +150,20 @@ def processcsv(filepath,img:Image):
                 rowcount+=1
     
 
+
+def appmag_to_size(appmag):
+    global maxradius
+    global minradius
+    coef=  15.417/20 * (math.e ** (-0.425 * appmag))
+    # coef 0 to 1
+
+    size=coef*maxradius
+    if size<minradius:
+        size=minradius
+
+    return size
+    
+
 def starformatter(star:Star):
     
     dot=stargraphic()
@@ -163,60 +175,39 @@ def starformatter(star:Star):
 
     
 
-    #abs mag visible 8 to -1.5
-    global appmagreq
-    consider = appmagreq-star.appmag 
-    #consider: value = brightness 0 to 9.5 
-    coef=consider/(appmagreq+1.5)
 
-    global colormin
-    min=colormin
-    baseline= int( (255-min)**(coef+0.5) +min)
-    
-    if baseline >255:
-        baseline=255
-    diff=255-baseline
-    global rbvariencediv
-    diff/=rbvariencediv
-    global Cmax
-    if greyshade:
-        if baseline>Cmax:
-            baseline=Cmax
-        dot.rgb=(baseline,baseline,baseline)
-    else:
-
-        rb=10**(star.bprp/2.5)
-        u=diff/(rb+1)
-        r=int(u*rb+baseline)
-        b=int(u+baseline)
-        # print(f"({r},{baseline},{b}) rb{rb} diff{diff} u{u}")
-
-        g=baseline
-    
         
-        if r>Cmax:
-            r=Cmax
-        if g>Cmax:
-            g=Cmax
-        if b>Cmax:
-            b=Cmax
+
+    # 
+    # global colormin
+    # min=colormin
+    # baseline= int( (255-min)**(coef+0.5) +min)
         
-        global colorOverride, overrideRGB
-        if colorOverride:
-            dot.rgb = overrideRGB
-        else:
-            dot.rgb=(r,g,b)
+    # greyshade
+    # global Cmax
+    # if greyshade:
+    #     if baseline>Cmax:
+    #         baseline=Cmax
+    #     dot.rgb=(baseline,baseline,baseline)
+
+    # override
+    # global colorOverride, overrideRGB
+    # if colorOverride:
+    #     dot.rgb = overrideRGB
+    # else:
+    #     dot.rgb=(r,g,b)
+    
+    # global sizedeviCoef
+    dot.radius=appmag_to_size(star.appmag)
+
+    # check no rgb above 255
+
+    # for i in range(3):
+    #     if dot.rgb[i] > 255:
+    #         dot.rgb[i]=255
     
 
-    # dot.radius=5
-    global minradius
-    global sizedeviCoef
-    dot.radius=int(round((coef*sizedeviCoef+minradius)))
-    # print(str(coef)+" | ceof")
-    # print(dot.radius)
-    if dot.radius>maxradius:
-        dot.radius=maxradius
-    
+    dot.rgb=overrideRGB
 
     return dot
 
@@ -310,7 +301,7 @@ def plot(img:Image):
 
     handleconsjson(ax,img)
 
-    plt.show()
+    # plt.show()
     plt.close()
 
 
@@ -356,7 +347,8 @@ def drawtext(ralist : list, declist : list, strlist : list, img:Image):
         cord=(x,y)
         name=namelist[i]
 
-        global txtfontsize,txtfill
+        global txtfontsize,txtfill,antialius
+        ImageDraw.ImageDraw.fontmode=antialius
         font = ImageFont.truetype(r'fonts/times.ttf', txtfontsize) 
         draw.text(cord,name,fill = txtfill,font=font)
 
