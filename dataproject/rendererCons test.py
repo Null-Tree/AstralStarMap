@@ -74,7 +74,7 @@ colorOverride=False
 overrideRGB=(255,255,255)
 
 #color border for ocnstalations
-consborderRGB = (0,0,0) #(100,100,100) 
+consborderRGB = (100,100,100) 
 #line width for constalations
 conslinewidth=4
 
@@ -90,6 +90,8 @@ antialius=True
 
 #bg
 bgcolor=(0,0,0)
+
+star_graphic_original = Image.open(r"graphics\stargraphic.png")
 
 ###############################################################
 ###################################
@@ -261,10 +263,37 @@ def createimg():
     img = Image.new(mode="RGB",size=(width,height), color=bgcolor )
     return img
 
-def placestar(imgstar:stargraphic,img):
+def placestar(imgstar:stargraphic,img:Image):
     draw = ImageDraw.Draw(img)
+    r=imgstar.radius
 
-    draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgb, outline=imgstar.rgb, width=1)
+
+
+
+    if  r < 1 :
+        draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgb, outline=imgstar.rgb, width=1)
+
+    else:
+        
+        # how big it shoul dbe, outline
+        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=None, outline=(241, 64, 165), width=2)
+
+        # locator
+        # 
+        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius+10, fill=None, outline=(109, 191, 184), width=2)
+
+
+        r = 2* int(r)
+
+        top_left_cords  = (imgstar.x-r,imgstar.y-r)
+
+        global star_graphic_original
+        star_graphic=star_graphic_original.copy()
+
+        star_graphic = star_graphic.resize((2*r,2*r))
+
+
+        img.paste(star_graphic, top_left_cords ,star_graphic)
 
 def saveimg(img):
     # img.save(sys.stdout, "PNG")
@@ -352,7 +381,6 @@ def drawtext(ralist : list, declist : list, strlist : list, img:Image):
         ImageDraw.ImageDraw.fontmode=antialius
         font = ImageFont.truetype(r'fonts/times.ttf', txtfontsize) 
         draw.text(cord,name,fill = txtfill,font=font)
-
 # ImageDraw.Draw.text(xy, text, fill=None, font=None, anchor=None, spacing=0, align=”left”)    
 
 
