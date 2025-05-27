@@ -256,7 +256,13 @@ def processBS(filepath,img:Image):
                     imgstar=starformatter(star)
                     
                     placestar(imgstar,img)
-            
+
+
+
+def BPRP_to_K(bprp):
+    """returns in kelvins"""
+    teff = 5040/(0.4929+0.5092*bprp-0.0353*bprp**2)
+    return teff           
 
 def createimg():
     global bgcolor

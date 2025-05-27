@@ -18,6 +18,8 @@ def color_conversion(icol, DeColour = True):
         # Create color (assuming alpha is not needed, or you can add a 4th component)
         cc[i] = (r, g, b)  # Or use a Color class if you have one defined
 
+        print(f"(r, g, b)   ({r}, {g}, {b})")
+
         if DeColour:
             # Manual implementation of Color.Lerp (linear interpolation)
             def lerp_color(a, b, t):
