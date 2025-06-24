@@ -558,9 +558,10 @@ def handleconsjson(ax,img):
 
     # Iterating through the json list need
     for constellation in data['constellations']:
+        cross=False
         #TODO: get constalation name
 
-        n,rasum,decsum=0,0,0
+        n,rasum_l,decsum_l=0,[],[]
         
         constellationName = constellation['names'][0]['english']
         namelist.append(constellationName)
@@ -583,20 +584,22 @@ def handleconsjson(ax,img):
             #ax.scatter(this_line_ra, this_line_de, s=320, facecolors='none', edgecolors='k')
             for i in range(len(this_line_ra)-1):
                 if abs(this_line_ra[i+1]-this_line_ra[i])<12:
+                    
                     #pass
                     finalra = ra2deg(this_line_ra)
                     # finalra=this_line_ra
                     # print(finalra)
                     for j in range(len(finalra)):
                         n+=1
-                        rasum+=finalra[j]
-                        decsum+=this_line_de[j]
+                        rasum_l.append(finalra[j])
+                        decsum_l.append(this_line_de[j])
 
                     
                     ax.plot(finalra[i:i+2], this_line_de[i:i+2], 'g-',alpha=0.5)
                     drawline(finalra[i:i+2],this_line_de[i:i+2],img)
                 else:
                     # print(this_line_ra[i:i+2], this_line_de[i:i+2], stars[star-1], stars[star])
+                    cross=True
                     ra_new, de_new = wrapped_line(this_line_ra[i:i+2], this_line_de[i:i+2])
                     
                     finalra=ra2deg(ra_new)
@@ -612,11 +615,48 @@ def handleconsjson(ax,img):
                     drawline(finalra[2:4], de_new[2:4],img)
                 #TODO: get a position
         
-        ramean=((rasum/n))
-        decmean= ((decsum/n))
-        # print(f"ra {ramean} de {decmean}")
-        ralist.append(ramean)
-        declist.append(decmean)
+        # check if cross boundaries
+
+        
+
+
+        if not cross:
+
+            ramean=((sum(rasum_l)/n))
+
+            decmean= ((sum(decsum_l)/n))
+
+            # print(f"ra {ramean} de {decmean}")
+            ralist.append(ramean)
+            declist.append(decmean)
+        else:
+            print(f"{constellationName} crosses broder")
+
+            rasum_l.sort()
+
+            ral1,ral2=[],[]
+            decl1,decl2=[],[]
+
+            for i in range(len(rasum_l)):
+                j=rasum_l[i]
+
+                if j<180:
+                    ral1.append(j)
+                    decl1.append(decsum_l[i])
+                else:
+                    ral2.append(j)
+                    decl2.append(decsum_l[i])
+
+                    
+            ralist.append(  sum(ral1) / len(ral1) )
+            declist.append(sum(decl1) / len(decl1))
+
+
+            namelist.append(constellationName)
+            ralist.append(sum(ral2) / len(ral2))
+            declist.append(sum(decl1) / len(decl1))
+
+            
     
     global consLabel
     if consLabel:

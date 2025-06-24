@@ -19,3 +19,7 @@ fixed with layering
 
 
 look at aladin star pics to see white to color ratio
+
+cons name label
+when cross edge, average places it to middle
+fix
