@@ -1,12 +1,27 @@
-Program processing gaia stars into cartesian cords, and other units including ly, absmag etc
-graphically renders stars into a png based on ra dec to be used in 3d skybox rendering
+#### Abstract
 
-to generate:
+Program processing Gaia stars into cartesian cords, and other units including light years, absolute magnitude etc
+Graphically renders stars into a PNG based on RA & DEC
 
-download
+Very customisable and configurable
 
-open
+Article and ready to download exports [here](https://null-tree.github.io/projects/starmap)
 
-cd to dataproject directory
 
-and run: renderCons.py 
+**To generate:**
+1. Fork/Clone repository
+2. cd to `/dataproject` directory
+3. run `renderCons.py`
+#### Acknowledgements
+
+With thanks to the [Astral.insitute](https://astral.institute/) supervisors for advice and code snippets
+
+As well as black body RGB system from
+scipython.com
+
+Star data from
+GAIA and simBAD
+
+Constellation data from
+IAU and Stellarium
+
