@@ -116,6 +116,10 @@ star_graphic_original = Image.open(r"graphics\stargraphic.png")
 # color system
 cs = cs_hdtv
 
+# disable for better stars
+# 2 min vs
+basic_render=False
+
 ###############################################################
 ###################################
 
@@ -356,56 +360,69 @@ def placestar(imgstar:stargraphic,img:Image, center:bool):
     grey_rgb=rgb_to_greyscale(final_rgb)
 
 
+    global basic_render
 
         
-    # how big it shoul dbe, outline
-    # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=None, outline=(241, 64, 165), width=2)
+        # percentage of star radius for white center
+    p_s_size = 0.6
 
-    # locator
-    # 
-    # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius+10, fill=None, outline=imgstar.rgb, width=5)
+    if not basic_render:
+        # colored
 
+        raw_adj=1
 
-    # colored
+        # 2r
+        r =  int(2*r) + raw_adj
 
-    raw_adj=1
-
-    # 2r
-    r =  int(2*r) + raw_adj
-
-    top_left_cords  = (imgstar.x-r,imgstar.y-r)
+        top_left_cords  = (imgstar.x-r,imgstar.y-r)
 
 
-    if not center:
-        global star_graphic_original
-        star_graphic=star_graphic_original.copy()
+        if not center:
+            global star_graphic_original
+            star_graphic=star_graphic_original.copy()
 
-        star_graphic = star_graphic.resize((2*r,2*r))
-        
-        star_graphic=tint_img(star_graphic,final_rgb)
+            star_graphic = star_graphic.resize((2*r,2*r))
+            
+            star_graphic=tint_img(star_graphic,final_rgb)
 
 
-        img.paste(star_graphic, top_left_cords ,star_graphic)
+            img.paste(star_graphic, top_left_cords ,star_graphic)
+
+        else:
+            n_stars+=1
+
+            # white center
+
+
+            r_w = round(r* p_s_size)
+
+            white_center=star_graphic_original.copy()
+
+            white_center = white_center.resize((2*r_w,2*r_w))
+
+            white_center=tint_img(white_center,grey_rgb)
+
+            top_left_cords  = (imgstar.x-r_w,imgstar.y-r_w)
+
+            img.paste(white_center, top_left_cords ,white_center)
 
     else:
-        n_stars+=1
+        draw = ImageDraw.Draw(img)
+        if not center:
+            draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgb)
+        else:
+            # inner circle
+            n_stars+=1
+            draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius*p_s_size, fill=rgb_to_greyscale(imgstar.rgb))
 
-        # white center
+        
+        
+        # how big it shoul dbe, outline
+        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=None, outline=(241, 64, 165), width=2)
 
-        # percentage of star radius
-        p_s_size = 0.6
-        r_w = round(r* p_s_size)
-
-        white_center=star_graphic_original.copy()
-
-        white_center = white_center.resize((2*r_w,2*r_w))
-
-        white_center=tint_img(white_center,grey_rgb)
-
-        top_left_cords  = (imgstar.x-r_w,imgstar.y-r_w)
-
-        img.paste(white_center, top_left_cords ,white_center)
-
+        # locator
+        # 
+        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius+10, fill=None, outline=imgstar.rgb, width=5)
 
 
 def saveimg(img):
