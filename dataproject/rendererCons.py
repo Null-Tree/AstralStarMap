@@ -66,6 +66,15 @@ class stargraphic:
 # 14 for 16k 
 
 sizepower=14
+
+
+
+#width power of 2, height half
+width=int(2**sizepower)
+height=int(width/2)
+
+
+
 maxradius= 32
 
 # 13 for 8k
@@ -87,19 +96,13 @@ colormin=0
 appmagreq = 8
 #greyshade
 #makes color into shade of grey x
-greyshade=False
 
-colorOverride=False
-overrideRGB=(255,255,255)
+draw_cons=True
 
 #color border for ocnstalations
 consborderRGB = (80,80,80) 
 #line width for constalations
 conslinewidth=4
-
-#width power of 2, height half
-width=int(2**sizepower)
-height=int(width/2)
 
 #txtcondif
 txtfill = (194, 215, 234)
@@ -122,7 +125,6 @@ basic_render=False
 
 ###############################################################
 ###################################
-
 
 
 
@@ -469,6 +471,11 @@ def plot(img:Image):
 #------------------------------------------------------------------------------
 
 def drawline(xlist,ylist,img):
+
+    global draw_cons
+    if draw_cons == False:
+        return
+
     draw = ImageDraw.Draw(img)
     global consborderRGB
     xl=xlist
