@@ -1,4 +1,5 @@
 import random
+import time
 import json
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +17,10 @@ import astropy.time
 import astropy.coordinates
 
 from dataclasses import dataclass
+
+from color_system.color_system import *
+
+from PIL import ImageOps
 
 @dataclass         
 class Star:
@@ -39,6 +44,8 @@ class Star:
     galacticl:float=None
     galacticb:float=None
 
+
+
 @dataclass         
 class stargraphic:
     rgb:list = None
@@ -54,12 +61,24 @@ class stargraphic:
 #########################################################################################
 
 #CONFIG
-sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
+# sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
+
+# 14 for 16k 
+
+sizepower=14
+maxradius= 32
+
+# 13 for 8k
+
+# sizepower=13
+# maxradius= 18
 
 #stars
 #min radius of star
 minradius=0
-maxradius=6*3
+
+
+
 #color min intensity of star rgb
 colormin=0
 
@@ -74,7 +93,7 @@ colorOverride=False
 overrideRGB=(255,255,255)
 
 #color border for ocnstalations
-consborderRGB = (100,100,100) 
+consborderRGB = (80,80,80) 
 #line width for constalations
 conslinewidth=4
 
@@ -93,6 +112,10 @@ bgcolor=(0,0,0)
 
 star_graphic_original = Image.open(r"graphics\stargraphic.png")
 
+
+# color system
+cs = cs_hdtv
+
 ###############################################################
 ###################################
 
@@ -107,6 +130,10 @@ sizelist=[]
 size=1
 
 n=0
+
+
+star_g_items:list[stargraphic]=[]
+
 
 
 # handles gaia stars
@@ -145,7 +172,7 @@ def processcsv(filepath,img:Image):
                     sizelist.append(size)
                     count()
                     imgstar=starformatter(star)
-                    placestar(imgstar,img)
+                    # placestar(imgstar,img)
 
                 
                     
@@ -159,6 +186,8 @@ def appmag_to_size(appmag):
     coef=  15.417/20 * (math.e ** (-0.425 * appmag))
     # coef 0 to 1
 
+    
+
     size=coef*maxradius
     if size<minradius:
         size=minradius
@@ -166,51 +195,46 @@ def appmag_to_size(appmag):
     return size
     
 
+
+
+
+lam = np.arange(380., 781., 5)
 def starformatter(star:Star):
+    global lam,cs
     
     dot=stargraphic()
-    #bprp to blue red ratio
-    #abs mag and app mag to brightness
 
     dot.x= width-int((float(star.ra) / 360) * width)  #TODO revert inversion
     dot.y= int(((float(star.dec-90)*-1)/180) * height) 
 
     
-
-
-        
-
-    # 
-    # global colormin
-    # min=colormin
-    # baseline= int( (255-min)**(coef+0.5) +min)
-        
-    # greyshade
-    # global Cmax
-    # if greyshade:
-    #     if baseline>Cmax:
-    #         baseline=Cmax
-    #     dot.rgb=(baseline,baseline,baseline)
-
-    # override
-    # global colorOverride, overrideRGB
-    # if colorOverride:
-    #     dot.rgb = overrideRGB
-    # else:
-    #     dot.rgb=(r,g,b)
-    
-    # global sizedeviCoef
     dot.radius=appmag_to_size(star.appmag)
 
-    # check no rgb above 255
 
-    # for i in range(3):
-    #     if dot.rgb[i] > 255:
-    #         dot.rgb[i]=255
+
     
 
-    dot.rgb=overrideRGB
+    teff = BPRP_to_teff(star.bprp)
 
+    spec = planck(lam, teff)
+
+    rgb = cs.spec_to_rgb(spec).tolist()
+
+    
+
+    for i in range(3):
+        rgb[i] = int(round(rgb[i]*256))
+    
+    # print(rgb)
+
+    dot.rgb=tuple(rgb)
+
+
+
+
+
+    
+    star_g_items.append(dot)
     return dot
 
 def count():
@@ -225,26 +249,39 @@ def processBS(filepath,img:Image):
             rowcount=0
 
             # idents,ra,dec,V,B-V,parallax 
-            for row in reader:
+
+            for drow in reader:
                 if rowcount==0:
                     rowcount+=1
                     continue
+            
+                row=drow.copy()
+
+                row[0]=int(row[0])
+                
+                for i in range(2,15):
+                    if row[i]:
+                        row[i]=float(row[i])
+
+                
+
                 star=Star(
-                    int(row[0]),
+                    (row[0]),
                     row[1],
-                    float(row[2]),
-                    float(row[3]),
-                    float(row[4]),
-                    float(row[5]),
-                    float(row[6]),
-                    float(row[7]),
-                    float(row[8]),
-                    float(row[9]),
-                    float(row[10]),
-                    float(row[11]),
-                    float(row[12]),
-                    float(row[13]),
-                    float(row[14]))
+                    (row[2]),
+                    (row[3]),
+                    (row[4]),
+                    (row[5]),
+                    (row[6]),
+                    (row[7]),
+                    (row[8]),
+                    (row[9]),
+                    (row[10]),
+                    (row[11]),
+                    (row[12]),
+                    (row[13]),
+                    (row[14]))
+                
                 global appmagreq
                 if star.appmag<appmagreq:
                     xlist.append(star.ra)
@@ -253,13 +290,26 @@ def processBS(filepath,img:Image):
                     sizelist.append(size)
                     count()
 
-                    imgstar=starformatter(star)
+                    # imgstar=
+                    starformatter(star)
                     
-                    placestar(imgstar,img)
+                    # placestar(imgstar,img)
 
+def rgb_to_greyscale(rgb):
 
+    # for avg
 
-def BPRP_to_K(bprp):
+    # sum=0
+    # for i in rgb:
+    #     sum+=i
+    # mean=sum//3
+    
+    # for peak
+    mean=max(rgb)
+
+    return (mean,mean,mean)
+
+def BPRP_to_teff(bprp):
     """returns in kelvins"""
     teff = 5040/(0.4929+0.5092*bprp-0.0353*bprp**2)
     return teff           
@@ -269,37 +319,94 @@ def createimg():
     img = Image.new(mode="RGB",size=(width,height), color=bgcolor )
     return img
 
-def placestar(imgstar:stargraphic,img:Image):
-    draw = ImageDraw.Draw(img)
+
+def tint_img(src:Image, color):
+    """tints input image, src png, color rgb"""
+    src.load()
+    # extract alpha transparency
+    r, g, b, alpha = src.split()
+    # extract greyscale
+    gray = ImageOps.grayscale(src)
+    # color by input
+    result = ImageOps.colorize(gray, (0, 0, 0, 0), color) 
+    # apply transparency
+    result.putalpha(alpha)
+    return result
+
+n_stars=0
+
+def placestar(imgstar:stargraphic,img:Image, center:bool):
+    global n_stars
+    
     r=imgstar.radius
 
 
+    
 
 
-    if  r < 1 :
-        draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgb, outline=imgstar.rgb, width=1)
+    final_rgb=list(imgstar.rgb)
+    if r<1:
 
-    else:
+        # smoothing
+        for i in range(3):
+            
+            # adj with prop to r
+            final_rgb[i] = int(round(r*final_rgb[i]))
+    
+    grey_rgb=rgb_to_greyscale(final_rgb)
+
+
+
         
-        # how big it shoul dbe, outline
-        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=None, outline=(241, 64, 165), width=2)
+    # how big it shoul dbe, outline
+    # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=None, outline=(241, 64, 165), width=2)
 
-        # locator
-        # 
-        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius+10, fill=None, outline=(109, 191, 184), width=2)
+    # locator
+    # 
+    # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius+10, fill=None, outline=imgstar.rgb, width=5)
 
 
-        r = 2* int(r)
+    # colored
 
-        top_left_cords  = (imgstar.x-r,imgstar.y-r)
+    raw_adj=1
 
+    # 2r
+    r =  int(2*r) + raw_adj
+
+    top_left_cords  = (imgstar.x-r,imgstar.y-r)
+
+
+    if not center:
         global star_graphic_original
         star_graphic=star_graphic_original.copy()
 
         star_graphic = star_graphic.resize((2*r,2*r))
+        
+        star_graphic=tint_img(star_graphic,final_rgb)
 
 
         img.paste(star_graphic, top_left_cords ,star_graphic)
+
+    else:
+        n_stars+=1
+
+        # white center
+
+        # percentage of star radius
+        p_s_size = 0.6
+        r_w = round(r* p_s_size)
+
+        white_center=star_graphic_original.copy()
+
+        white_center = white_center.resize((2*r_w,2*r_w))
+
+        white_center=tint_img(white_center,grey_rgb)
+
+        top_left_cords  = (imgstar.x-r_w,imgstar.y-r_w)
+
+        img.paste(white_center, top_left_cords ,white_center)
+
+
 
 def saveimg(img):
     # img.save(sys.stdout, "PNG")
@@ -337,7 +444,8 @@ def plot(img:Image):
 
     handleconsjson(ax,img)
 
-    plt.show()
+    print("constallations loaded")
+    # plt.show()
     plt.close()
 
 
@@ -432,6 +540,7 @@ def handleconsjson(ax,img):
 
     # open list of stars with coordinates
     identity, ra_dec = np.loadtxt("csv/iau.coords.txt",usecols=(1,5),delimiter='|',unpack=True,dtype=str)
+    # print(ra_dec)
     for i in range(len(identity)):
         identity[i] = identity[i].strip()
     Nstars = len(ra_dec)
@@ -523,6 +632,25 @@ def ra2deg(ra:list):
         result[i]=float(list[i])/24*360
     return result
 
+#================================
+
+
+
+def sort_by_radius():
+    # orig_list.sort(key=lambda x: x.count, reverse=True)
+    global star_g_items
+    star_g_items.sort(key=lambda x: x.radius)
+
+def place_list_stars(img:Image):
+    global star_g_items
+
+    # place glows
+    for imgstar in star_g_items:
+        placestar(imgstar,img,False)
+
+    # place white centers
+    for imgstar in star_g_items:
+        placestar(imgstar,img,True)
 
 #===============================================================================================================
 
@@ -530,10 +658,22 @@ def main():
     img=createimg()
     plot(img)
     
+    print("\nprocessing csv")
     processcsv("csv/visstars8_NewCat.csv",img)
     processBS("csv/brightstars.csv",img)
-    
+    print("csv processeds\n")
 
+    
+    print("sorting stars")
+    sort_by_radius()
+    print("stars sorted\n")
+
+    print("placing stars")
+    place_list_stars(img)
+    print("stars placed\n")
+
+
+    print(f"{n_stars} stars plotted")
     
     
     
@@ -547,4 +687,12 @@ def main():
 
 
 
-main()
+if __name__=="__main__":
+
+    
+
+
+    start = time.time()
+    main()
+    print(time.strftime("%H hours %M minutes %S seconds", time.gmtime(time.time() - start)),f" elapsed")
+

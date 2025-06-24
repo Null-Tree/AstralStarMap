@@ -1,6 +1,20 @@
 from SpecRend import SpecRend
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.constants import h, c, k
+
+def planck(lam, T):
+    """ Returns the spectral radiance of a black body at temperature T.
+
+    Returns the spectral radiance, B(lam, T), in W.sr-1.m-2 of a black body
+    at temperature T (in K) at a wavelength lam (in nm), using Planck's law.
+
+    """
+
+    lam_m = lam / 1.e9
+    fac = h*c/lam_m/k/T
+    B = 2*h*c**2/lam_m**5 / (np.exp(fac) - 1)
+    return B
 
 def color_conversion(icol, DeColour = True): 
     # Assuming icol is a list of temperatures and cc is a list of colors to be populated
