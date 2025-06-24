@@ -1,5 +1,5 @@
 consplot/
-
+noncode/
 dataproject/old/
 
 dataproject/exports/
@@ -9,3 +9,11 @@ dataprojects/csv/brightstarsCOMBINEDBACKUP.csv
 dataprojects/csv/brightstarsotherstars.csv
 dataprojects/csv/brightstarsraw.csv
 dataprojects/csv/consStars.csv
+
+ARCHIVE
+ARCHIVE/
+
+dataproject_mil
+dataproject_mil/
+/process_mil
+process_mil/

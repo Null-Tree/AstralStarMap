@@ -66,15 +66,6 @@ class stargraphic:
 # 14 for 16k 
 
 sizepower=14
-
-
-
-#width power of 2, height half
-width=int(2**sizepower)
-height=int(width/2)
-
-
-
 maxradius= 32
 
 # 13 for 8k
@@ -96,18 +87,24 @@ colormin=0
 appmagreq = 8
 #greyshade
 #makes color into shade of grey x
+greyshade=False
 
-draw_cons=True
+colorOverride=False
+overrideRGB=(255,255,255)
 
 #color border for ocnstalations
 consborderRGB = (80,80,80) 
 #line width for constalations
 conslinewidth=4
 
+#width power of 2, height half
+width=int(2**sizepower)
+height=int(width/2)
+
 #txtcondif
 txtfill = (194, 215, 234)
 txtfontsize=32
-consLabel=True
+consLabel=False
 antialius=True
 
 #bg
@@ -119,12 +116,9 @@ star_graphic_original = Image.open(r"graphics\stargraphic.png")
 # color system
 cs = cs_hdtv
 
-# disable for better stars
-# 2 min vs
-basic_render=False
-
 ###############################################################
 ###################################
+
 
 
 
@@ -136,9 +130,6 @@ sizelist=[]
 size=1
 
 n=0
-
-
-star_g_items:list[stargraphic]=[]
 
 
 
@@ -178,7 +169,7 @@ def processcsv(filepath,img:Image):
                     sizelist.append(size)
                     count()
                     imgstar=starformatter(star)
-                    # placestar(imgstar,img)
+                    placestar(imgstar,img)
 
                 
                     
@@ -240,7 +231,7 @@ def starformatter(star:Star):
 
 
     
-    star_g_items.append(dot)
+
     return dot
 
 def count():
@@ -255,39 +246,26 @@ def processBS(filepath,img:Image):
             rowcount=0
 
             # idents,ra,dec,V,B-V,parallax 
-
-            for drow in reader:
+            for row in reader:
                 if rowcount==0:
                     rowcount+=1
                     continue
-            
-                row=drow.copy()
-
-                row[0]=int(row[0])
-                
-                for i in range(2,15):
-                    if row[i]:
-                        row[i]=float(row[i])
-
-                
-
                 star=Star(
-                    (row[0]),
+                    int(row[0]),
                     row[1],
-                    (row[2]),
-                    (row[3]),
-                    (row[4]),
-                    (row[5]),
-                    (row[6]),
-                    (row[7]),
-                    (row[8]),
-                    (row[9]),
-                    (row[10]),
-                    (row[11]),
-                    (row[12]),
-                    (row[13]),
-                    (row[14]))
-                
+                    float(row[2]),
+                    float(row[3]),
+                    float(row[4]),
+                    float(row[5]),
+                    float(row[6]),
+                    float(row[7]),
+                    float(row[8]),
+                    float(row[9]),
+                    float(row[10]),
+                    float(row[11]),
+                    float(row[12]),
+                    float(row[13]),
+                    float(row[14]))
                 global appmagreq
                 if star.appmag<appmagreq:
                     xlist.append(star.ra)
@@ -296,10 +274,9 @@ def processBS(filepath,img:Image):
                     sizelist.append(size)
                     count()
 
-                    # imgstar=
-                    starformatter(star)
+                    imgstar=starformatter(star)
                     
-                    # placestar(imgstar,img)
+                    placestar(imgstar,img)
 
 def rgb_to_greyscale(rgb):
 
@@ -340,10 +317,11 @@ def tint_img(src:Image, color):
     return result
 
 n_stars=0
-
-def placestar(imgstar:stargraphic,img:Image, center:bool):
-    global n_stars
+def placestar(imgstar:stargraphic,img:Image):
     
+    global n_stars
+    n_stars+=1
+    draw = ImageDraw.Draw(img)
     r=imgstar.radius
 
 
@@ -361,61 +339,23 @@ def placestar(imgstar:stargraphic,img:Image, center:bool):
     
     grey_rgb=rgb_to_greyscale(final_rgb)
 
-
-    global basic_render
-
+    # r < 1
+    if  False :
+        # place colored glow
+        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgb, outline=imgstar.rgb, width=2)
         
-        # percentage of star radius for white center
-    p_s_size = 0.6
+        # greyscale center
+        # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=grey_rgb, outline=grey_rgb, width=0.5)
 
-    if not basic_render:
-        # colored
+                # solution to pixationcolouration issue, smooth rgb value with its grey rgb
 
-        raw_adj=1
+        for i in range(3):
+            final_rgb[i]= (imgstar.rgb[i] + grey_rgb[i]) //2
 
-        # 2r
-        r =  int(2*r) + raw_adj
-
-        top_left_cords  = (imgstar.x-r,imgstar.y-r)
-
-
-        if not center:
-            global star_graphic_original
-            star_graphic=star_graphic_original.copy()
-
-            star_graphic = star_graphic.resize((2*r,2*r))
-            
-            star_graphic=tint_img(star_graphic,final_rgb)
-
-
-            img.paste(star_graphic, top_left_cords ,star_graphic)
-
-        else:
-            n_stars+=1
-
-            # white center
-
-
-            r_w = round(r* p_s_size)
-
-            white_center=star_graphic_original.copy()
-
-            white_center = white_center.resize((2*r_w,2*r_w))
-
-            white_center=tint_img(white_center,grey_rgb)
-
-            top_left_cords  = (imgstar.x-r_w,imgstar.y-r_w)
-
-            img.paste(white_center, top_left_cords ,white_center)
+        final_rgb=tuple(final_rgb)
+        draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=final_rgb, outline=final_rgb, width=1)
 
     else:
-        draw = ImageDraw.Draw(img)
-        if not center:
-            draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius, fill=imgstar.rgb)
-        else:
-            # inner circle
-            n_stars+=1
-            draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius*p_s_size, fill=rgb_to_greyscale(imgstar.rgb))
 
         
         
@@ -425,6 +365,45 @@ def placestar(imgstar:stargraphic,img:Image, center:bool):
         # locator
         # 
         # draw.circle((imgstar.x,imgstar.y), radius=imgstar.radius+10, fill=None, outline=imgstar.rgb, width=5)
+
+
+        # colored
+
+        raw_adj=1
+
+        # 2r
+        r =  int(2*r) + raw_adj
+
+        top_left_cords  = (imgstar.x-r,imgstar.y-r)
+
+        global star_graphic_original
+        star_graphic=star_graphic_original.copy()
+
+        star_graphic = star_graphic.resize((2*r,2*r))
+        
+        star_graphic=tint_img(star_graphic,final_rgb)
+
+
+        img.paste(star_graphic, top_left_cords ,star_graphic)
+
+        del star_graphic
+
+        # white center
+
+        # percentage of star radius
+        p_s_size = 0.6
+        r_w = round(r* p_s_size)
+
+        white_center=star_graphic_original.copy()
+
+        white_center = white_center.resize((2*r_w,2*r_w))
+
+        white_center=tint_img(white_center,grey_rgb)
+
+        top_left_cords  = (imgstar.x-r_w,imgstar.y-r_w)
+
+        img.paste(white_center, top_left_cords ,white_center)
+
 
 
 def saveimg(img):
@@ -471,11 +450,6 @@ def plot(img:Image):
 #------------------------------------------------------------------------------
 
 def drawline(xlist,ylist,img):
-
-    global draw_cons
-    if draw_cons == False:
-        return
-
     draw = ImageDraw.Draw(img)
     global consborderRGB
     xl=xlist
@@ -564,7 +538,6 @@ def handleconsjson(ax,img):
 
     # open list of stars with coordinates
     identity, ra_dec = np.loadtxt("csv/iau.coords.txt",usecols=(1,5),delimiter='|',unpack=True,dtype=str)
-    # print(ra_dec)
     for i in range(len(identity)):
         identity[i] = identity[i].strip()
     Nstars = len(ra_dec)
@@ -582,10 +555,9 @@ def handleconsjson(ax,img):
 
     # Iterating through the json list need
     for constellation in data['constellations']:
-        cross=False
         #TODO: get constalation name
 
-        n,rasum_l,decsum_l=0,[],[]
+        n,rasum,decsum=0,0,0
         
         constellationName = constellation['names'][0]['english']
         namelist.append(constellationName)
@@ -608,22 +580,20 @@ def handleconsjson(ax,img):
             #ax.scatter(this_line_ra, this_line_de, s=320, facecolors='none', edgecolors='k')
             for i in range(len(this_line_ra)-1):
                 if abs(this_line_ra[i+1]-this_line_ra[i])<12:
-                    
                     #pass
                     finalra = ra2deg(this_line_ra)
                     # finalra=this_line_ra
                     # print(finalra)
                     for j in range(len(finalra)):
                         n+=1
-                        rasum_l.append(finalra[j])
-                        decsum_l.append(this_line_de[j])
+                        rasum+=finalra[j]
+                        decsum+=this_line_de[j]
 
                     
                     ax.plot(finalra[i:i+2], this_line_de[i:i+2], 'g-',alpha=0.5)
                     drawline(finalra[i:i+2],this_line_de[i:i+2],img)
                 else:
                     # print(this_line_ra[i:i+2], this_line_de[i:i+2], stars[star-1], stars[star])
-                    cross=True
                     ra_new, de_new = wrapped_line(this_line_ra[i:i+2], this_line_de[i:i+2])
                     
                     finalra=ra2deg(ra_new)
@@ -639,48 +609,11 @@ def handleconsjson(ax,img):
                     drawline(finalra[2:4], de_new[2:4],img)
                 #TODO: get a position
         
-        # check if cross boundaries
-
-        
-
-
-        if not cross:
-
-            ramean=((sum(rasum_l)/n))
-
-            decmean= ((sum(decsum_l)/n))
-
-            # print(f"ra {ramean} de {decmean}")
-            ralist.append(ramean)
-            declist.append(decmean)
-        else:
-            print(f"{constellationName} crosses broder")
-
-            rasum_l.sort()
-
-            ral1,ral2=[],[]
-            decl1,decl2=[],[]
-
-            for i in range(len(rasum_l)):
-                j=rasum_l[i]
-
-                if j<180:
-                    ral1.append(j)
-                    decl1.append(decsum_l[i])
-                else:
-                    ral2.append(j)
-                    decl2.append(decsum_l[i])
-
-                    
-            ralist.append(  sum(ral1) / len(ral1) )
-            declist.append(sum(decl1) / len(decl1))
-
-
-            namelist.append(constellationName)
-            ralist.append(sum(ral2) / len(ral2))
-            declist.append(sum(decl1) / len(decl1))
-
-            
+        ramean=((rasum/n))
+        decmean= ((decsum/n))
+        # print(f"ra {ramean} de {decmean}")
+        ralist.append(ramean)
+        declist.append(decmean)
     
     global consLabel
     if consLabel:
@@ -696,25 +629,6 @@ def ra2deg(ra:list):
         result[i]=float(list[i])/24*360
     return result
 
-#================================
-
-
-
-def sort_by_radius():
-    # orig_list.sort(key=lambda x: x.count, reverse=True)
-    global star_g_items
-    star_g_items.sort(key=lambda x: x.radius)
-
-def place_list_stars(img:Image):
-    global star_g_items
-
-    # place glows
-    for imgstar in star_g_items:
-        placestar(imgstar,img,False)
-
-    # place white centers
-    for imgstar in star_g_items:
-        placestar(imgstar,img,True)
 
 #===============================================================================================================
 
@@ -722,22 +636,13 @@ def main():
     img=createimg()
     plot(img)
     
-    print("\nprocessing csv")
     processcsv("csv/visstars8_NewCat.csv",img)
     processBS("csv/brightstars.csv",img)
-    print("csv processeds\n")
-
-    
-    print("sorting stars")
-    sort_by_radius()
-    print("stars sorted\n")
-
-    print("placing stars")
-    place_list_stars(img)
-    print("stars placed\n")
-
 
     print(f"{n_stars} stars plotted")
+    
+    
+
     
     
     
