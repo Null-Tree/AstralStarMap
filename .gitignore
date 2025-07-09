@@ -13,7 +13,5 @@ dataprojects/csv/consStars.csv
 ARCHIVE
 ARCHIVE/
 
-dataproject_mil
-dataproject_mil/
-/process_mil
-process_mil/
+mil_stars/million.csv
+dataproject_mil/csv/million.csv
