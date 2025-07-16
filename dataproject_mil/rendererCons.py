@@ -56,8 +56,8 @@ class stargraphic:
 
 
 
-sizepower=14
-maxradius=  100 #32*2
+sizepower=15
+maxradius=  80 #32*2
 
 
 #width power of 2, height half
@@ -110,8 +110,7 @@ star_graphic_original = Image.open(r"graphics\stargraphic.png")
 cs = cs_hdtv
 
 # disable for better stars
-# 2 min vs
-basic_render=True
+basic_render=False
 
 
 count_increment=100000
@@ -346,13 +345,19 @@ def placestar(imgstar:stargraphic,img:Image, center:bool):
 
 
     
+    if basic_render:
+        b_render_curr=basic_render
+    else:
+        # r_thresh=5
+        # b_render_curr = (r<r_thresh)
+        b_render_curr = False
     
     
     final_rgb=list(imgstar.rgb)
     
     
 
-    if basic_render:
+    if b_render_curr:
     
         if r<1:
             grey_rgb=rgb_to_greyscale(final_rgb)
@@ -386,7 +391,7 @@ def placestar(imgstar:stargraphic,img:Image, center:bool):
     # percentage of star radius for white center
     p_s_size = 0.6
 
-    if not basic_render:
+    if not b_render_curr:
         # colored
 
         raw_adj=1

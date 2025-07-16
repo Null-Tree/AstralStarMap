@@ -141,6 +141,16 @@ n=0
 star_g_items:list[stargraphic]=[]
 
 
+def equatorialtogalactic(ra,dec): 
+    coord = astropy.coordinates.TETE(
+    ra=ra * u.deg,
+    dec=dec * u.deg,
+    obstime=astropy.time.Time("2023-04-12"))
+
+    coord = coord.transform_to(astropy.coordinates.Galactic())
+    return coord
+
+
 
 # handles gaia stars
 def processcsv(filepath,img:Image):
@@ -210,8 +220,11 @@ def starformatter(star:Star):
     
     dot=stargraphic()
 
-    dot.x= width-int((float(star.ra) / 360) * width)  #TODO revert inversion
+    # # ecliptic (normal)
+    dot.x= width-int((float(star.ra) / 360) * width)  
     dot.y= int(((float(star.dec-90)*-1)/180) * height) 
+
+
 
     
     dot.radius=appmag_to_size(star.appmag)
@@ -570,10 +583,14 @@ def handleconsjson(ax,img):
     Nstars = len(ra_dec)
     ra = np.zeros(Nstars)
     de = np.zeros(Nstars)
+    
+    # ecliptic
     for i in range(len(ra_dec)):
         ra[i] = float(ra_dec[i].split()[0])
         de[i] = float(ra_dec[i].split()[1])
-        
+
+
+
     # Opening JSON file
     f = open('csv/iau.json')
 
