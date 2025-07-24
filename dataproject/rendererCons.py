@@ -15,6 +15,8 @@ import scipy.ndimage as ndi
 import astropy.units as u
 import astropy.time
 import astropy.coordinates
+from tqdm import tqdm
+
 
 from dataclasses import dataclass
 
@@ -140,6 +142,11 @@ n=0
 
 star_g_items:list[stargraphic]=[]
 
+def getfilelen(filepath):
+    with open(filepath, 'r') as fp:
+        for count, line in enumerate(fp):
+            pass
+    return count+1
 
 def equatorialtogalactic(ra,dec): 
     coord = astropy.coordinates.TETE(
@@ -154,12 +161,13 @@ def equatorialtogalactic(ra,dec):
 
 # handles gaia stars
 def processcsv(filepath,img:Image):
+    flen=getfilelen(filepath)
     with open(filepath, newline='') as csvfilein:
             reader = csv.reader(csvfilein, delimiter=',',)
             rowcount=0
 
             
-            for row in reader:
+            for row in tqdm(reader,total=flen):
                 if rowcount==0:
                     rowcount+=1
                     continue
@@ -263,13 +271,14 @@ def count():
 
 #handles bright stars
 def processBS(filepath,img:Image):
+    flen=getfilelen(filepath)
     with open(filepath, newline='') as csvfilein:
             reader = csv.reader(csvfilein, delimiter=',',)
             rowcount=0
 
             # idents,ra,dec,V,B-V,parallax 
 
-            for drow in reader:
+            for drow in tqdm(reader,total=flen):
                 if rowcount==0:
                     rowcount+=1
                     continue
@@ -279,8 +288,8 @@ def processBS(filepath,img:Image):
                 row[0]=int(row[0])
                 
                 for i in range(2,15):
-                    if row[i]:
-                        row[i]=float(row[i])
+                    if row[i].lstrip():
+                        row[i]=float(row[i].lstrip())
 
                 
 
@@ -726,11 +735,13 @@ def place_list_stars(img:Image):
     global star_g_items
 
     # place glows
-    for imgstar in star_g_items:
+    print("glows")
+    for imgstar in tqdm(star_g_items):
         placestar(imgstar,img,False)
 
+    print("centers")
     # place white centers
-    for imgstar in star_g_items:
+    for imgstar in tqdm(star_g_items):
         placestar(imgstar,img,True)
 
 #===============================================================================================================
@@ -740,7 +751,9 @@ def main():
     plot(img)
     
     print("\nprocessing csv")
+    print("gaia catalouge")
     processcsv("csv/visstars8_NewCat.csv",img)
+    print("amended bright stars")
     processBS("csv/brightstars.csv",img)
     print("csv processeds\n")
 

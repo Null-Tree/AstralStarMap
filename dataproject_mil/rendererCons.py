@@ -7,7 +7,7 @@ import csv
 import sqlite3
 import math
 import sys
-
+from tqdm import tqdm
 from tkinter import * 
 from PIL import Image,ImageDraw, ImageFont #Pillow library
 import scipy.ndimage as ndi
@@ -22,6 +22,7 @@ from color_system.color_system import *
 
 from PIL import ImageOps
 
+
 @dataclass         
 class Star:
     appmag:float=None
@@ -29,6 +30,9 @@ class Star:
 
     ra: float=None
     dec:float=None
+
+    gal_l:float=None
+    gal_b:float=None
 
 
 
@@ -47,6 +51,9 @@ class stargraphic:
 #########################################################################################
 
 #CONFIG
+
+
+
 # sizepower=14 #size power for dimensions of expor timage #normal 14 for 16k
 
 # 14 for 16k 
@@ -97,7 +104,7 @@ conslinewidth=4
 #txtcondif
 txtfill = (194, 215, 234)
 txtfontsize=32
-consLabel=False
+consLabel=True
 antialius=True
 
 #bg
@@ -110,10 +117,11 @@ star_graphic_original = Image.open(r"graphics\stargraphic.png")
 cs = cs_hdtv
 
 # disable for better stars
-basic_render=False
+basic_render=True
 
+# /"celestial" or "galactic"
+cord_mode="galactic"
 
-count_increment=100000
 ###############################################################
 ###################################
 
@@ -134,25 +142,45 @@ star_g_items:list[stargraphic]=[]
 
 chucked=0
 
+
+
+def equatorialtogalactic(ra,dec): 
+    coord = astropy.coordinates.TETE(
+    ra=ra * u.deg,
+    dec=dec * u.deg,
+    obstime=astropy.time.Time("2023-04-12"))
+
+    coord = coord.transform_to(astropy.coordinates.Galactic())
+    return coord
+
+
+
+
+
+def getfilelen(filepath):
+    with open(filepath, 'r') as fp:
+        for count, line in enumerate(fp):
+            pass
+    return count+1
+
 # handles gaia stars
 def processcsv(filepath,img:Image):
-    global count_increment
+    flen=getfilelen(filepath)
     with open(filepath, newline='') as csvfilein:
             reader = csv.reader(csvfilein, delimiter=',',)
             rowcount=0
 
             
-            for row in reader:
+            for row in tqdm(reader,total=flen):
                 if rowcount==0:
                     rowcount+=1
                     continue
                 
                 
-                if rowcount%count_increment==0:
-                    print("csv: ",rowcount)
 
                 tochuck=False
-                for item in row:
+                for titem in row:
+                    item=titem.lstrip()
                     if item =='' or item == None:
                         global chucked
                         # print(f"     {rowcount} chuck: {row}")
@@ -162,18 +190,16 @@ def processcsv(filepath,img:Image):
                 if tochuck:
                     continue 
                 
-                    
-                # print(row)
                 star=Star(
-                    float(row[2]),
-                    float(row[3]),
-                    float(row[0]),
-                    float(row[1])
-                    
-                    )
+                        float(row[2]),
+                        float(row[3]),
+                        float(row[0]),
+                        float(row[1]),
+                        float(row[4]),
+                        float(row[5])
+                        
+                        )
                 
-                    
-
                 global appmagreq
 
                 if star.appmag<appmagreq:
@@ -215,8 +241,17 @@ def starformatter(star:Star):
     
     dot=stargraphic()
 
-    dot.x= width-int((float(star.ra) / 360) * width)  #TODO revert inversion
-    dot.y= int(((float(star.dec-90)*-1)/180) * height) 
+
+    global cord_mode
+    # /"celestial" or "galactic"
+    if cord_mode=="celestial":
+        cords={"x":star.ra,"y":star.dec}
+    elif cord_mode=="galactic":
+        cords={"x":star.gal_l,"y":star.gal_b}
+    else:
+        raise Exception("invalid cordinate mode")
+    dot.x= width-int((float(cords["x"]) / 360) * width)  #TODO revert inversion
+    dot.y= int(((float(cords["y"]-90)*-1)/180) * height) 
 
     
     dot.radius=appmag_to_size(star.appmag)
@@ -255,14 +290,17 @@ def count():
 
 #handles bright stars
 def processBS(filepath,img:Image):
+    flen=getfilelen(filepath)
     with open(filepath, newline='') as csvfilein:
             reader = csv.reader(csvfilein, delimiter=',',)
             rowcount=0
 
             # idents,ra,dec,V,B-V,parallax 
 
-            for drow in reader:
+            for drow in tqdm(reader,total=flen):
                 if rowcount==0:
+                    # for i in range(len(drow)):
+                    #     print(f"{i} {drow[i]}")
                     rowcount+=1
                     continue
             
@@ -271,19 +309,39 @@ def processBS(filepath,img:Image):
                 row[0]=int(row[0])
                 
                 for i in range(2,15):
-                    if row[i]:
+                    if row[i] and row[i].lstrip()!="":
                         row[i]=float(row[i])
 
-                
+
+                #  id
+                # 1  designation
+                # 2  appmag
+                # 3  absmag
+                # 4  b-v; interpret as bprp
+                # 5  ra
+                # 6  dec
+                # 7  ly
+                # 8  parallax
+                # 9  parsec
+                # 10  from earth X
+                # 11  from earth Y
+                # 12  from earth Z
+                # 13  galactic l
+                # 14  galactic b
+
+                    # float(row[2]),
+                    # float(row[4]),
+                    # float(row[5]),
+                    # float(row[6])
 
                 star=Star(
-
-                    float(row[2]),
-                    float(row[4]),
-                    float(row[5]),
-                    float(row[6])
-
-                )
+                        float(row[2]),
+                        float(row[4]),
+                        float(row[5]),
+                        float(row[6]),
+                        float(row[13]),
+                        float(row[14])
+                    )
                 
                 global appmagreq
                 if star.appmag<appmagreq:
@@ -339,7 +397,7 @@ def tint_img(src:Image, color):
 n_stars=0
 
 def placestar(imgstar:stargraphic,img:Image, center:bool):
-    global n_stars,count_increment,basic_render
+    global n_stars,basic_render
     
     r=imgstar.radius
 
@@ -605,9 +663,10 @@ def handleconsjson(ax,img):
     data = json.load(f)
 
     # Iterating through the json list need
-    for constellation in data['constellations']:
+    for constellation in tqdm(data['constellations']): 
         cross=False
-        #TODO: get constalation name
+        global cord_mode
+        
 
         n,rasum_l,decsum_l=0,[],[]
         
@@ -619,14 +678,21 @@ def handleconsjson(ax,img):
         # 
         for line in range(len(this_lines)):
             stars = this_lines[line]
-            this_line_ra = np.zeros(len(stars))
+            this_line_ra = np.zeros(len(stars)) 
             this_line_de = np.zeros(len(stars))
             
             for star in range(len(stars)):
                 this_line_ra[star], this_line_de[star] = get_ra_dec(stars[star],identity,ra,de)
-                this_line_ra[star] /= 15.0
+                print(this_line_ra[star], this_line_de[star])
+                this_line_ra[star] /= 15.0  #rn tlra inhours, tlde in degrees
 
-                
+
+                if cord_mode =="galactic":
+                    #needs tobe deg in deg out
+                    cord=equatorialtogalactic(this_line_ra[star] * 15,this_line_de[star])
+                    this_line_ra[star]=cord.l.deg /15 # needs to be in hours for later comparison
+                    this_line_de[star]=cord.b.deg
+                    
 
                 #ax.text(this_line_ra[star], this_line_de[star], str(stars[star]))
             #ax.scatter(this_line_ra, this_line_de, s=320, facecolors='none', edgecolors='k')
@@ -665,6 +731,8 @@ def handleconsjson(ax,img):
         
         # check if cross boundaries
 
+
+        # if len(rasum_l)==0
         
 
 
@@ -679,8 +747,11 @@ def handleconsjson(ax,img):
             declist.append(decmean)
         else:
             print(f"{constellationName} crosses broder")
+            
 
             rasum_l.sort()
+
+            print(rasum_l)
 
             ral1,ral2=[],[]
             decl1,decl2=[],[]
@@ -695,9 +766,9 @@ def handleconsjson(ax,img):
                     ral2.append(j)
                     decl2.append(decsum_l[i])
 
-                    
+            print(cross, ral1,ral2)
             ralist.append(  sum(ral1) / len(ral1) )
-            declist.append(sum(decl1) / len(decl1))
+            declist.append( sum(decl1) / len(decl1) )
 
 
             namelist.append(constellationName)
@@ -714,8 +785,9 @@ def handleconsjson(ax,img):
     f.close()
 
 def ra2deg(ra:list):
+    """converts list of hours cords to degrees"""
     list=ra
-    result=[0]*len(list)
+    result=[0 for i in range(len(list))]
     for i in range(len(list)):
         result[i]=float(list[i])/24*360
     return result
@@ -734,32 +806,27 @@ def sort_by_radius():
 def place_list_stars(img:Image):
     global star_g_items
 
-    print(f'len: {len(star_g_items)}')
-
     # place glows
-    for i in range(len(star_g_items)):
-        if i % count_increment ==0:
-            print(f"glows: {i}")
-
-        imgstar=star_g_items[i]
+    print("glows")
+    for imgstar in tqdm(star_g_items):
         placestar(imgstar,img,False)
 
     # place white centers
-    for i in range(len(star_g_items)):
-        if i % count_increment ==0:
-            print(f"centers: {i}")
-        imgstar=star_g_items[i]
+    print("centers")
+    for imgstar in tqdm(star_g_items):
         placestar(imgstar,img,True)
 
 #===============================================================================================================
 
 def main():
+    print("loading constallations")
     img=createimg()
     plot(img)
     
     print("\nprocessing csv")
-    processcsv("csv/million.csv",img)
-    # processcsv("csv/million_sample.csv",img)
+    print("gaia catalouge")
+    processcsv("csv/million_wgal.csv",img)
+    print("amended bright stars")
     processBS("csv/brightstars.csv",img)
     print("csv processeds\n")
 
@@ -787,7 +854,7 @@ def main():
     print(f"{chucked} stars chucked")
     
     
-
+    print("exporting image")
     saveimg(img)
 
 
@@ -798,10 +865,6 @@ def main():
 
 
 if __name__=="__main__":
-
-    
-
-
     start = time.time()
     main()
     print(time.strftime("%H hours %M minutes %S seconds", time.gmtime(time.time() - start)),f" elapsed")

@@ -41,6 +41,10 @@ class GaiaStar:
 
 
 
+import astropy.units as u
+import astropy.time
+import astropy.coordinates
+
 
 
 def equatorialtogalactic(ra,dec): 
