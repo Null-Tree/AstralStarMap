@@ -94,7 +94,7 @@ appmagreq = 100
 #greyshade
 #makes color into shade of grey x
 
-draw_cons=True
+draw_cons=False
 
 #color border for ocnstalations
 consborderRGB = (80,80,80) 
@@ -104,7 +104,7 @@ conslinewidth=4
 #txtcondif
 txtfill = (194, 215, 234)
 txtfontsize=32
-consLabel=True
+consLabel=False
 antialius=True
 
 #bg
@@ -117,16 +117,33 @@ star_graphic_original = Image.open(r"graphics\stargraphic.png")
 cs = cs_hdtv
 
 # disable for better stars
-basic_render=True
+basic_render=False
 
 # /"celestial" or "galactic"
 cord_mode="galactic"
+
+# % of width
+horizontal_shift=0.5
 
 ###############################################################
 ###################################
 
 
-
+def bounded_shift(val,delta,interval):
+    """general shift, note start and end of interval are same, will go to int min"""
+    vmin,vmax=interval
+    vsum=val+delta
+    interval_range=(vmax-vmin) 
+    if vsum>vmax:
+        d=vsum-vmax
+        n=math.ceil(d/interval_range)
+        vsum-=n*(vmax-vmin) 
+    
+    if vsum<vmin:
+        d=vmin-vsum
+        n=math.ceil(d/interval_range)
+        vsum+=n*(vmax-vmin) 
+    return vsum
 
 xlist=[]
 ylist=[]
@@ -237,7 +254,7 @@ def appmag_to_size(appmag):
 
 lam = np.arange(380., 781., 5)
 def starformatter(star:Star):
-    global lam,cs
+    global lam,cs,horizontal_shift
     
     dot=stargraphic()
 
@@ -250,7 +267,8 @@ def starformatter(star:Star):
         cords={"x":star.gal_l,"y":star.gal_b}
     else:
         raise Exception("invalid cordinate mode")
-    dot.x= width-int((float(cords["x"]) / 360) * width)  #TODO revert inversion
+    dot.x= width-int((float(cords["x"]) / 360) * width)  
+    dot.x= bounded_shift(dot.x,width*horizontal_shift,(0,width))
     dot.y= int(((float(cords["y"]-90)*-1)/180) * height) 
 
     
@@ -683,7 +701,7 @@ def handleconsjson(ax,img):
             
             for star in range(len(stars)):
                 this_line_ra[star], this_line_de[star] = get_ra_dec(stars[star],identity,ra,de)
-                print(this_line_ra[star], this_line_de[star])
+                # print(this_line_ra[star], this_line_de[star])
                 this_line_ra[star] /= 15.0  #rn tlra inhours, tlde in degrees
 
 
@@ -746,12 +764,12 @@ def handleconsjson(ax,img):
             ralist.append(ramean)
             declist.append(decmean)
         else:
-            print(f"{constellationName} crosses broder")
+            # print(f"{constellationName} crosses broder")
             
 
             rasum_l.sort()
 
-            print(rasum_l)
+            # print(rasum_l)
 
             ral1,ral2=[],[]
             decl1,decl2=[],[]
@@ -766,7 +784,7 @@ def handleconsjson(ax,img):
                     ral2.append(j)
                     decl2.append(decsum_l[i])
 
-            print(cross, ral1,ral2)
+            # print(cross, ral1,ral2)
             ralist.append(  sum(ral1) / len(ral1) )
             declist.append( sum(decl1) / len(decl1) )
 
@@ -802,19 +820,30 @@ def sort_by_radius():
     star_g_items.sort(key=lambda x: x.radius)
 
     print(f"r extremes {star_g_items[-1].radius}   {star_g_items[0].radius}")
-
+    print([i.radius for i in star_g_items[0:20]])
+    print([i.radius for i in star_g_items[-20:]])
+    
 def place_list_stars(img:Image):
     global star_g_items
 
-    # place glows
-    print("glows")
+    # # place glows
+    # print("glows")
+    # for imgstar in tqdm(star_g_items):
+    #     placestar(imgstar,img,False)
+
+    # # place white centers
+    # print("centers")
+    # for imgstar in tqdm(star_g_items):
+    #     placestar(imgstar,img,True)
+
+    # new
+    # print("placing stars")
     for imgstar in tqdm(star_g_items):
         placestar(imgstar,img,False)
-
-    # place white centers
-    print("centers")
-    for imgstar in tqdm(star_g_items):
         placestar(imgstar,img,True)
+
+
+
 
 #===============================================================================================================
 
@@ -825,6 +854,7 @@ def main():
     
     print("\nprocessing csv")
     print("gaia catalouge")
+
     processcsv("csv/million_wgal.csv",img)
     print("amended bright stars")
     processBS("csv/brightstars.csv",img)
