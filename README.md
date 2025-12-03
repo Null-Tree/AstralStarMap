@@ -1,3 +1,5 @@
+depreciated, see AstralStarMap2
+
 #### Abstract
 
 Program processing Gaia stars into cartesian cords, and other units including light years, absolute magnitude etc
