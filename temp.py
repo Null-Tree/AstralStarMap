@@ -15,6 +15,18 @@ def bounded_shift(val,delta,interval):
         vsum+=n*(vmax-vmin) 
     return vsum
 
-for i in range(-100,100):
-    i/=10
-    print(bounded_shift(0,i,(0,24)))
+# for i in range(-100,100):
+#     i/=10
+#     print(bounded_shift(0,i,(0,24)))
+
+def input_until_valid(prompt,acceptable,errmsg=None):
+    print(prompt,end="")
+    vin=input()
+    if vin in acceptable:
+        return vin
+    else:
+        if errmsg:
+            print(errmsg)
+        return input_until_valid(prompt,acceptable,errmsg)
+    
+print(input_until_valid("test",['a','b']))

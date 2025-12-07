@@ -94,17 +94,17 @@ appmagreq = 100
 #greyshade
 #makes color into shade of grey x
 
-draw_cons=False
+draw_cons=True
 
 #color border for ocnstalations
-consborderRGB = (80,80,80) 
+consborderRGB = (157, 165, 188)
 #line width for constalations
-conslinewidth=4
+conslinewidth=20
 
 #txtcondif
 txtfill = (194, 215, 234)
 txtfontsize=32
-consLabel=False
+consLabel=True
 antialius=True
 
 #bg
@@ -117,7 +117,7 @@ star_graphic_original = Image.open(r"graphics\stargraphic.png")
 cs = cs_hdtv
 
 # disable for better stars
-basic_render=False
+basic_render=True
 
 # /"celestial" or "galactic"
 cord_mode="galactic"
@@ -254,7 +254,8 @@ def appmag_to_size(appmag):
 
 lam = np.arange(380., 781., 5)
 def starformatter(star:Star):
-    global lam,cs,horizontal_shift
+    global lam,cs,horizontal_shift,horizontal_shift
+
     
     dot=stargraphic()
 
@@ -683,7 +684,7 @@ def handleconsjson(ax,img):
     # Iterating through the json list need
     for constellation in tqdm(data['constellations']): 
         cross=False
-        global cord_mode
+        global cord_mode,horizontal_shift
         
 
         n,rasum_l,decsum_l=0,[],[]
@@ -708,8 +709,9 @@ def handleconsjson(ax,img):
                 if cord_mode =="galactic":
                     #needs tobe deg in deg out
                     cord=equatorialtogalactic(this_line_ra[star] * 15,this_line_de[star])
-                    this_line_ra[star]=cord.l.deg /15 # needs to be in hours for later comparison
+                    vvra=cord.l.deg /15 # needs to be in hours for later comparison
                     this_line_de[star]=cord.b.deg
+                    this_line_ra[star]=bounded_shift(vvra,12,(0,24))
                     
 
                 #ax.text(this_line_ra[star], this_line_de[star], str(stars[star]))

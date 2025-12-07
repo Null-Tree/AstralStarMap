@@ -20,3 +20,7 @@ notes
 add_galactic_lb/csv/million.csv
 add_galactic_lb/csv/million_sample.csv
 dataproject_mil/csv/million_wgal.csv
+
+
+/exports/*
+*/exports/*
