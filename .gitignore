@@ -24,3 +24,9 @@ dataproject_mil/csv/million_wgal.csv
 
 /exports/*
 */exports/*
+dataproject_mil_W_bin/binaries/all_stars
+dataproject_mil_W_bin/csv/million.csv
+dataproject_mil_W_bin/csv/million_wgal.csv
+dataproject_mil_W_bin_target_select/binaries/all_stars
+dataproject_mil_W_bin_target_select/csv/million.csv
+dataproject_mil_W_bin_target_select/csv/million_wgal.csv
